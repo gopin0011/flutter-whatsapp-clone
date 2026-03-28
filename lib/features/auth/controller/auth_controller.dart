@@ -1,23 +1,26 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 import 'package:whatsapp_ui/features/auth/repository/auth_repository.dart';
 import 'package:whatsapp_ui/models/user_model.dart';
 
-final authControllerProvider = Provider((ref) {
+final authControllerProvider = Provider<AuthController>((ref) {
   final authRepository = ref.watch(authRepositoryProvider);
-  return AuthController(authRepository: authRepository, ref: ref);
+  return AuthController(
+    authRepository: authRepository,
+    ref: ref,                    // tetap pakai ref (tipe Ref)
+  );
 });
 
-final userDataAuthProvider = FutureProvider((ref) {
+final userDataAuthProvider = FutureProvider<UserModel?>((ref) {
   final authController = ref.watch(authControllerProvider);
   return authController.getUserData();
 });
 
 class AuthController {
   final AuthRepository authRepository;
-  final ProviderRef ref;
+  final Ref ref;                 // ← Ubah dari ProviderRef ke Ref
+
   AuthController({
     required this.authRepository,
     required this.ref,
@@ -40,12 +43,14 @@ class AuthController {
     );
   }
 
-  void saveUserDataToFirebase(
-      BuildContext context, String name, File? profilePic) {
-    authRepository.saveUserDataToFirebase(
+  void saveUserDataToEvolution(
+    BuildContext context, 
+    String name, 
+    File? profilePic,
+  ) {
+    authRepository.saveUserDataToEvolution(
       name: name,
       profilePic: profilePic,
-      ref: ref,
       context: context,
     );
   }

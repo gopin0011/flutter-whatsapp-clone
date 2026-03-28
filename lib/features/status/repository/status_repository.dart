@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
@@ -12,18 +11,19 @@ import 'package:whatsapp_ui/common/utils/utils.dart';
 import 'package:whatsapp_ui/models/status_model.dart';
 import 'package:whatsapp_ui/models/user_model.dart';
 
-final statusRepositoryProvider = Provider(
-  (ref) => StatusRepository(
+final statusRepositoryProvider = Provider<StatusRepository>((ref) {
+  return StatusRepository(
     firestore: FirebaseFirestore.instance,
     auth: FirebaseAuth.instance,
     ref: ref,
-  ),
-);
+  );
+});
 
 class StatusRepository {
   final FirebaseFirestore firestore;
   final FirebaseAuth auth;
-  final ProviderRef ref;
+  final Ref ref;                    // ← Ubah dari ProviderRef ke Ref
+
   StatusRepository({
     required this.firestore,
     required this.auth,
@@ -40,29 +40,28 @@ class StatusRepository {
     try {
       var statusId = const Uuid().v1();
       String uid = auth.currentUser!.uid;
+
+      // Upload gambar ke Firebase Storage
       String imageurl = await ref
           .read(commonFirebaseStorageRepositoryProvider)
           .storeFileToFirebase(
             '/status/$statusId$uid',
             statusImage,
           );
+
       List<Contact> contacts = [];
       if (await FlutterContacts.requestPermission()) {
         contacts = await FlutterContacts.getContacts(withProperties: true);
       }
 
       List<String> uidWhoCanSee = [];
+      for (var contact in contacts) {
+        if (contact.phones.isEmpty) continue;
 
-      for (int i = 0; i < contacts.length; i++) {
         var userDataFirebase = await firestore
             .collection('users')
-            .where(
-              'phoneNumber',
-              isEqualTo: contacts[i].phones[0].number.replaceAll(
-                    ' ',
-                    '',
-                  ),
-            )
+            .where('phoneNumber',
+                isEqualTo: contact.phones[0].number.replaceAll(' ', ''))
             .get();
 
         if (userDataFirebase.docs.isNotEmpty) {
@@ -74,27 +73,25 @@ class StatusRepository {
       List<String> statusImageUrls = [];
       var statusesSnapshot = await firestore
           .collection('status')
-          .where(
-            'uid',
-            isEqualTo: auth.currentUser!.uid,
-          )
+          .where('uid', isEqualTo: uid)
           .get();
 
       if (statusesSnapshot.docs.isNotEmpty) {
+        // Update status yang sudah ada
         Status status = Status.fromMap(statusesSnapshot.docs[0].data());
         statusImageUrls = status.photoUrl;
         statusImageUrls.add(imageurl);
+
         await firestore
             .collection('status')
             .doc(statusesSnapshot.docs[0].id)
-            .update({
-          'photoUrl': statusImageUrls,
-        });
+            .update({'photoUrl': statusImageUrls});
         return;
       } else {
         statusImageUrls = [imageurl];
       }
 
+      // Buat status baru
       Status status = Status(
         uid: uid,
         username: username,
@@ -119,16 +116,14 @@ class StatusRepository {
       if (await FlutterContacts.requestPermission()) {
         contacts = await FlutterContacts.getContacts(withProperties: true);
       }
-      for (int i = 0; i < contacts.length; i++) {
+
+      for (var contact in contacts) {
+        if (contact.phones.isEmpty) continue;
+
         var statusesSnapshot = await firestore
             .collection('status')
-            .where(
-              'phoneNumber',
-              isEqualTo: contacts[i].phones[0].number.replaceAll(
-                    ' ',
-                    '',
-                  ),
-            )
+            .where('phoneNumber',
+                isEqualTo: contact.phones[0].number.replaceAll(' ', ''))
             .where(
               'createdAt',
               isGreaterThan: DateTime.now()
@@ -136,6 +131,7 @@ class StatusRepository {
                   .millisecondsSinceEpoch,
             )
             .get();
+
         for (var tempData in statusesSnapshot.docs) {
           Status tempStatus = Status.fromMap(tempData.data());
           if (tempStatus.whoCanSee.contains(auth.currentUser!.uid)) {

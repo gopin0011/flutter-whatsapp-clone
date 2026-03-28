@@ -32,7 +32,8 @@ class _UserInformationScreenState extends ConsumerState<UserInformationScreen> {
     String name = nameController.text.trim();
 
     if (name.isNotEmpty) {
-      ref.read(authControllerProvider).saveUserDataToFirebase(
+      // Ganti nama fungsinya menjadi saveUserDataToEvolution
+      ref.read(authControllerProvider).saveUserDataToEvolution(
             context,
             name,
             image,

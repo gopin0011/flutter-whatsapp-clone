@@ -7,7 +7,7 @@ import 'package:whatsapp_ui/features/chat/widgets/display_text_image_gif.dart';
 
 class SenderMessageCard extends StatelessWidget {
   const SenderMessageCard({
-    Key? key,
+    super.key,
     required this.message,
     required this.date,
     required this.type,
@@ -15,7 +15,7 @@ class SenderMessageCard extends StatelessWidget {
     required this.repliedText,
     required this.username,
     required this.repliedMessageType,
-  }) : super(key: key);
+  });
   final String message;
   final String date;
   final MessageEnum type;
@@ -29,7 +29,7 @@ class SenderMessageCard extends StatelessWidget {
     final isReplying = repliedText.isNotEmpty;
 
     return SwipeTo(
-      onRightSwipe: onRightSwipe,
+      onRightSwipe: (_) => onRightSwipe(),
       child: Align(
         alignment: Alignment.centerLeft,
         child: ConstrainedBox(

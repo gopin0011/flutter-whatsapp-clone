@@ -20,7 +20,7 @@ final chatControllerProvider = Provider((ref) {
 
 class ChatController {
   final ChatRepository chatRepository;
-  final ProviderRef ref;
+  final Ref ref;
   ChatController({
     required this.chatRepository,
     required this.ref,
@@ -92,20 +92,18 @@ class ChatController {
     bool isGroupChat,
   ) {
     final messageReply = ref.read(messageReplyProvider);
-    int gifUrlPartIndex = gifUrl.lastIndexOf('-') + 1;
-    String gifUrlPart = gifUrl.substring(gifUrlPartIndex);
-    String newgifUrl = 'https://i.giphy.com/media/$gifUrlPart/200.gif';
 
     ref.read(userDataAuthProvider).whenData(
           (value) => chatRepository.sendGIFMessage(
             context: context,
-            gifUrl: newgifUrl,
+            gifUrl: gifUrl, // langsung pakai
             recieverUserId: recieverUserId,
             senderUser: value!,
             messageReply: messageReply,
             isGroupChat: isGroupChat,
           ),
         );
+
     ref.read(messageReplyProvider.state).update((state) => null);
   }
 

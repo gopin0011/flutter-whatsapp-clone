@@ -8,26 +8,26 @@ import 'package:whatsapp_ui/features/select_contacts/controller/select_contact_c
 final selectedGroupContacts = StateProvider<List<Contact>>((ref) => []);
 
 class SelectContactsGroup extends ConsumerStatefulWidget {
-  const SelectContactsGroup({Key? key}) : super(key: key);
+  const SelectContactsGroup({super.key});
 
   @override
-  ConsumerState<ConsumerStatefulWidget> createState() =>
-      _SelectContactsGroupState();
+  ConsumerState<SelectContactsGroup> createState() => _SelectContactsGroupState();
 }
 
 class _SelectContactsGroupState extends ConsumerState<SelectContactsGroup> {
   List<int> selectedContactsIndex = [];
 
   void selectContact(int index, Contact contact) {
-    if (selectedContactsIndex.contains(index)) {
-      selectedContactsIndex.removeAt(index);
-    } else {
-      selectedContactsIndex.add(index);
-    }
-    setState(() {});
-    ref
-        .read(selectedGroupContacts.state)
-        .update((state) => [...state, contact]);
+    setState(() {
+      if (selectedContactsIndex.contains(index)) {
+        selectedContactsIndex.remove(index);   // remove(index) bukan removeAt
+      } else {
+        selectedContactsIndex.add(index);
+      }
+    });
+
+    // Cara benar update StateProvider di Riverpod 2.x
+    ref.read(selectedGroupContacts.notifier).update((state) => [...state, contact]);
   }
 
   @override
@@ -44,25 +44,18 @@ class _SelectContactsGroupState extends ConsumerState<SelectContactsGroup> {
                       padding: const EdgeInsets.only(bottom: 8),
                       child: ListTile(
                         title: Text(
-                          contact.displayName,
-                          style: const TextStyle(
-                            fontSize: 18,
-                          ),
+                          contact.displayName ?? '',
+                          style: const TextStyle(fontSize: 18),
                         ),
                         leading: selectedContactsIndex.contains(index)
-                            ? IconButton(
-                                onPressed: () {},
-                                icon: const Icon(Icons.done),
-                              )
+                            ? const Icon(Icons.done)
                             : null,
                       ),
                     ),
                   );
                 }),
           ),
-          error: (err, trace) => ErrorScreen(
-            error: err.toString(),
-          ),
+          error: (err, trace) => ErrorScreen(error: err.toString()),
           loading: () => const Loader(),
         );
   }

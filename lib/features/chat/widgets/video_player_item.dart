@@ -1,4 +1,4 @@
-import 'package:cached_video_player/cached_video_player.dart';
+import 'package:cached_video_player_plus/cached_video_player_plus.dart';
 import 'package:flutter/material.dart';
 
 class VideoPlayerItem extends StatefulWidget {
@@ -13,22 +13,27 @@ class VideoPlayerItem extends StatefulWidget {
 }
 
 class _VideoPlayerItemState extends State<VideoPlayerItem> {
-  late CachedVideoPlayerController videoPlayerController;
+  // 1. Tambahkan 'Plus' di tipe datanya
+  late CachedVideoPlayerPlusController videoPlayerController;
   bool isPlay = false;
 
   @override
   void initState() {
     super.initState();
-    videoPlayerController = CachedVideoPlayerController.network(widget.videoUrl)
-      ..initialize().then((value) {
+    // 2. Gunakan CachedVideoPlayerPlusController.networkUrl (API terbaru pakai networkUrl)
+    // Kalau versi 3.x, dia lebih suka Uri.parse
+    videoPlayerController = CachedVideoPlayerPlusController.networkUrl(
+      Uri.parse(widget.videoUrl),
+    )..initialize().then((value) {
         videoPlayerController.setVolume(1);
+        setState(() {});
       });
   }
 
   @override
   void dispose() {
-    super.dispose();
     videoPlayerController.dispose();
+    super.dispose();
   }
 
   @override
@@ -37,7 +42,8 @@ class _VideoPlayerItemState extends State<VideoPlayerItem> {
       aspectRatio: 16 / 9,
       child: Stack(
         children: [
-          CachedVideoPlayer(videoPlayerController),
+          // 3. Nama widgetnya juga pakai 'Plus'
+          CachedVideoPlayerPlus(videoPlayerController),
           Align(
             alignment: Alignment.center,
             child: IconButton(

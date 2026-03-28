@@ -18,7 +18,7 @@ final callControllerProvider = Provider((ref) {
 
 class CallController {
   final CallRepository callRepository;
-  final ProviderRef ref;
+  final Ref ref;
   final FirebaseAuth auth;
   CallController({
     required this.callRepository,

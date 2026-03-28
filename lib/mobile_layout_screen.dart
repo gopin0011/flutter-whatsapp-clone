@@ -40,9 +40,11 @@ class _MobileLayoutScreenState extends ConsumerState<MobileLayoutScreen>
       case AppLifecycleState.resumed:
         ref.read(authControllerProvider).setUserState(true);
         break;
+
+      case AppLifecycleState.paused:
       case AppLifecycleState.inactive:
       case AppLifecycleState.detached:
-      case AppLifecycleState.paused:
+      case AppLifecycleState.hidden:         
         ref.read(authControllerProvider).setUserState(false);
         break;
     }

@@ -1,16 +1,7 @@
 buildscript {
-    ext.kotlin_version = '1.7.0'
     repositories {
         google()
         mavenCentral()
-    }
-
-    dependencies {
-        classpath 'com.android.tools.build:gradle:4.1.0'
-        // START: FlutterFire Configuration
-        classpath 'com.google.gms:google-services:4.3.10'
-        // END: FlutterFire Configuration
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     }
 }
 
@@ -18,16 +9,41 @@ allprojects {
     repositories {
         google()
         mavenCentral()
-        maven { url 'https://jitpack.io' }
     }
 }
 
-rootProject.buildDir = '../build'
+rootProject.buildDir = "${project.rootDir}/../build"
+
 subprojects {
     project.buildDir = "${rootProject.buildDir}/${project.name}"
+    afterEvaluate { project ->
+        if (project.hasProperty('android')) {
+            project.android {
+                // Beri namespace kalau belum ada
+                if (!project.android.hasProperty('namespace') || 
+                    project.android.namespace == null || 
+                    project.android.namespace.isEmpty()) {
+                    project.android.namespace = "com.agora.${project.name.replaceAll("-", "_")}"
+                }
+
+                // Opsional: hapus package attribute di manifest secara otomatis
+                def manifestFile = project.file("src/main/AndroidManifest.xml")
+                if (manifestFile.exists()) {
+                    def manifestContent = manifestFile.getText('UTF-8')
+                    if (manifestContent.contains('package=')) {
+                        manifestContent = manifestContent.replaceAll(/package="[^"]*"/, '')
+                        manifestFile.write(manifestContent, 'UTF-8')
+                    }
+                }
+            }
+        }
+    }
+}
+
+subprojects {
     project.evaluationDependsOn(':app')
 }
 
-task clean(type: Delete) {
+tasks.register("clean", Delete) {
     delete rootProject.buildDir
 }

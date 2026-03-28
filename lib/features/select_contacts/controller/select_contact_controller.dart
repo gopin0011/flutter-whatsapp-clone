@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_contacts/contact.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 import 'package:whatsapp_ui/features/select_contacts/repository/select_contact_repository.dart';
 
 final getContactsProvider = FutureProvider((ref) {
@@ -9,7 +8,7 @@ final getContactsProvider = FutureProvider((ref) {
   return selectContactRepository.getContacts();
 });
 
-final selectContactControllerProvider = Provider((ref) {
+final selectContactControllerProvider = Provider<SelectContactController>((ref) {
   final selectContactRepository = ref.watch(selectContactsRepositoryProvider);
   return SelectContactController(
     ref: ref,
@@ -18,8 +17,9 @@ final selectContactControllerProvider = Provider((ref) {
 });
 
 class SelectContactController {
-  final ProviderRef ref;
+  final Ref ref;                                 // ← Ubah ke Ref
   final SelectContactRepository selectContactRepository;
+
   SelectContactController({
     required this.ref,
     required this.selectContactRepository,
